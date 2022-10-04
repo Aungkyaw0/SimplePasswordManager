@@ -1,13 +1,28 @@
-
 //Developeded BY AKT 2/10/2022
 #include <iostream>
 #include <string.h>
 #include <fstream>
 #define SIZE 100
+#define FILE "pass3.txt"
 using namespace std;
 typedef unsigned int usi;
 int m_size = 0;
 char file[SIZE];
+void clear()
+{
+    system("clear");//Change clear to cls if you are using window instead of linux
+}
+void Enter()
+{
+    cout << "\n--------- Press Enter To Continue ----------\n";    
+    cin.clear();
+    cin.ignore();
+    char test = 'x';
+    while (test != '\n')
+    {
+        cin.get(test);
+    }
+}
 class Master
 {
     protected:
@@ -25,7 +40,7 @@ class Master
             cout << "Master Password ::> " << this-> masterPass << endl;  
         }
         void wrote();
-        int checkCredential();
+        int checkCredential(char fName[]);
         
 
         
@@ -63,10 +78,10 @@ class PM
 //Methods From Master
 void Master::wrote()
 {
-    
-    strcpy(file, this->masterEmail);
+    strcat(file, ".");
+    strcat(file, this->masterEmail);
     strcat(file, ".db");
-    cout << "FIleName ::> " << file << endl;
+    //cout << "FIleName ::> " << file << endl;
     fstream obj;
         obj.open(file, ios::binary | ios::out);
         if(!obj)
@@ -79,23 +94,24 @@ void Master::wrote()
             strcpy(tmp2.masterEmail, this->masterEmail);
             strcpy(tmp2.masterPass, this->masterPass);
             obj.write((char *)&tmp2, sizeof(tmp2));
-            cout << "Write Successfully" << endl;
+            cout << "Creating user Successfull" << endl;
+            Enter();
         }
         obj.close();
 }
 
-int Master::checkCredential()
+int Master::checkCredential(char fName[])
 {
     
     int status = 404;
     usi u_status = 0, p_status = 0;
     Master tmp;
     fstream obj;
-    obj.open(file, ios::binary | ios::in);
+    obj.open(fName, ios::binary | ios::in);
     if(!obj)
     {
-        cout << "Sorry Can't Read" << endl;
-        cout << "There is not Data For Useremail :: " << this->masterEmail << endl;
+        cout << "\n!!!! There is not Data For Useremail :: " << this->masterEmail << "!!!!" << endl;
+        Enter();
     }
     else
     {
@@ -105,9 +121,11 @@ int Master::checkCredential()
             u_status = 1;
             if(strcmp(this->masterPass, tmp.masterPass) == 0)
             {
+                clear();
                 cout << "Welcome User :: " << this->masterEmail << endl;
                 m_size = sizeof(tmp);
                 status = 200;
+                Enter();
             }
             else
             {
@@ -128,8 +146,11 @@ int Master::checkCredential()
 //Methods From PM
 int PM::CheckFile(char f[])
 {
-    char file_name[SIZE];
-    strcpy(file_name, f);
+    char file_name[SIZE] = "";
+    char *p;
+    p = file_name;
+    strcat(file_name, ".");
+    strcat(file_name, f);
     strcat(file_name, ".db");
    
     ifstream obj;
@@ -144,6 +165,12 @@ int PM::CheckFile(char f[])
         i = 200;
     }
     obj.close();
+    while(*p != '\0')
+    {
+        strcpy(p, "\0");
+        p++;
+    }
+    
     return i;
 }
 
@@ -151,6 +178,7 @@ void PM::MainMenu()
 {   usi op = 0;
     while(true)
     {
+        clear();
         cout << "Welcome From Password Manager\n--------------------------------\n";
         cout << "1. Register\n2. Login\n3. Change Password\n4. Exit\nEnter the option ::> ";
         cin >> op;
@@ -201,12 +229,15 @@ void PM::Register()
     }
     else
     {
-        cout << "Sorry UserEmail " << rEmail <<"is existed in the system";
+        cout << "Sorry UserEmail \"\"" << rEmail << "\"\" existed in the system" << endl;
+        Enter();
     }
 }
 
 void PM::Login()
 {
+    clear();
+    char ff[SIZE] = "";
     int lstatus = 0;
     char lEmail[SIZE], lPass[SIZE];
     cout << "Welcome From Login Panel\n----------------------\n";
@@ -215,11 +246,24 @@ void PM::Login()
     cin.getline(lEmail, SIZE);
     cout << "Enter the password ::> ";
     cin.getline(lPass, SIZE);
-    strcpy(file, lEmail);
-    strcat(file, ".db");
+    if(ff[0] == '\0')
+    {
+        printf("Same");
+        strcat(ff, ".");
+        strcat(ff, lEmail);
+        strcat(ff, ".db");
+        if(file[0] == '\0')
+        {
+            strcpy(file, ff);
+        }
+    }
+    
+    //strcat(file, ".");
+    //strcat(file, lEmail);
+    //strcat(file, ".db");
     Master tmp1;
     tmp1.setData(lEmail, lPass);
-    lstatus =  tmp1.checkCredential();
+    lstatus =  tmp1.checkCredential(ff);
     if(lstatus == 200)
     {
         userMenu();
@@ -233,6 +277,7 @@ void PM::userMenu()
     
     while(true)
     {
+        clear();
         cout << "Welcome From DataBase\n--------------------\n";
         cout << "1. Add New Data\n2. View Data\n3. View All Data\n4. Update Data\n5. Exit" << endl;
         cout << "Enter the option ::> ";
@@ -305,6 +350,7 @@ void PM::AddData()
     PM tmp1;
     while(loo)
     {
+        clear();
         char c = 'a';
         cin.clear();
         cin.ignore();
@@ -333,7 +379,8 @@ void PM::AddData()
             else
             {
                 obj.write((char *)&tmp1, sizeof(tmp1));
-                cout << "----------Adding Success-----------" << endl;
+                cout << "----------Adding Success-----------";
+                Enter();
                 break;
             }
         }
@@ -356,6 +403,7 @@ void PM::ViewAllData()
     }
     else
     {
+        
         obj.seekp(0);
         obj.seekp(m_size);
         while(true)
@@ -368,7 +416,11 @@ void PM::ViewAllData()
             
             tmp.printData();
             cout << "\n";
+            
         }
+        Enter();
+        
+        
     }
 
 
@@ -378,6 +430,7 @@ void PM::DataHandle(int status)
 {
     while(1)
     {
+        clear();
         cout << "Welcome From Credential Database\n---------------------------------------" << endl;
         cout << "Available Description ::> ";
         fstream obj;
@@ -447,7 +500,9 @@ void PM::DataHandle(int status)
                 cout << "Email ::> " << tmp.userEmail << endl;
                 cout << "Password ::> " << tmp.userPass << endl;
                 cout << "Updating Data......\n--------------------\n";
-                cout << "ID ::> " << tmp.id;
+                cout << "ID ::> " << tmp.id << endl;
+                cout << "Enter the new Description ::> ";
+                cin.getline(tmp.Desciption, SIZE);  
                 cout << "Enter the new UserName ::> ";
                 cin.getline(tmp.userName, SIZE);
                 cout << "Enter the new email ::> ";
@@ -462,7 +517,7 @@ void PM::DataHandle(int status)
                     obj.seekp(m_size, ios::beg);
                     obj.seekp((sizeof(tmp) * (counter)), ios::cur);
                     obj.write((char *)&tmp, sizeof(tmp));
-                    cout << "Updating Done";
+                    cout << "---------Updating Done--------------" << endl;
                 }
             
             }
